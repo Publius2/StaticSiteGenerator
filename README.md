@@ -1,0 +1,2 @@
+# StaticSiteGenerator
+bootdev guided project
