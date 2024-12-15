@@ -38,7 +38,6 @@ class ParentNode(HTMLNode):
         
         result = f"<{self.tag}{' ' + self.props_to_html() if self.props != None else ''}>"
         for child  in self.children:
-            print(child)
             result += child.to_html()
         result += f'</{self.tag}>'
         return result 
