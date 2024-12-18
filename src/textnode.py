@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 from htmlnode import LeafNode
 
 class TextType(Enum):
@@ -55,5 +56,41 @@ def split_nodes_delimeter(old_nodes, delimeter, text_type):
             if text_in_node_split[i] == '': continue
             if i%2 == 0: new_nodes.append(TextNode(text_in_node_split[i], node.text_type))
             else: new_nodes.append(TextNode(text_in_node_split[i], text_type))
-
     return new_nodes
+
+def extratct_markdown_links(text):
+    return re.findall(r'(?<!!)\[(.*?)\]\((.*?)\)', text)  
+    
+
+def extract_markdown_image(text):
+    return re.findall(r'!\[(.*?)\]\((.*?)\)', text)
+
+def split_nodes_link(old_nodes):      
+    new_nodes = []
+    for node in old_nodes:
+        links = extratct_markdown_links(node.text)
+        new_nodes += split_node_image_and_link_helper(node, links)
+    return new_nodes
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        links = extract_markdown_image(node.text)
+        new_nodes += split_node_image_and_link_helper(node, links, image=True)
+    return new_nodes
+
+def split_node_image_and_link_helper(node, links, image=False):
+    # doesn't make a node if their is no text
+    if node.text == '': return []
+    # if there are no links just return node
+    if len(links) == 0: return [node]
+    else:
+    #split by first incident of first link in links
+        alt_text = links[0][0]
+        url = links[0][1]
+        node_text_split = node.text.split(f'{"!" if image else ""}[{alt_text}]({url})', 1)
+    #if there is text before the link create a text node add it to list followed by link node otherwise just create + add link node 
+        if node_text_split[0] != '': result = [TextNode(node_text_split[0], node.text_type), TextNode(alt_text, TextType.links, url)]
+        else: result = [TextNode(alt_text, TextType.links, url)]
+    #recurese wtih a node made from remaining text and remaining links
+        result += split_node_image_and_link_helper(TextNode(node_text_split[1], node.text_type), links[1:], image)
+        return result

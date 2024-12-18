@@ -1,6 +1,6 @@
 import unittest
 
-from textnode import TextNode, TextType, text_node_to_html_node, split_nodes_delimeter
+from textnode import *
 
 
 class TestTextNode(unittest.TestCase):
@@ -79,6 +79,76 @@ class TestTextNodeSplitter(unittest.TestCase):
             TextNode(' not ', TextType.normal_text)
         ]
         self.assertEqual(new_nodes, comparisonNodes)
+class TestExtractionFunctions(unittest.TestCase):
+    def test_link_extratction(self):
+        sample = "this is an image in markdown [image](www.example.com) here"
+        image = extratct_markdown_links(sample)
+        comparison = [("image", "www.example.com")]
+        self.assertEqual(image, comparison)
+    def test_image_extraction(self):
+        sample = "this is one picture ![image1](www.example.com/x.png) and this is a second one ![image2](www.example.com/y.png)"
+        image = extract_markdown_image(sample)
+        comparison = [('image1', 'www.example.com/x.png'), ('image2', 'www.example.com/y.png')]
+        self.assertEqual(image, comparison)
+class TestImageAndLinkSplitters(unittest.TestCase):
+    def test_link_node_splitter(self):
+        sample = [
+            TextNode("[x](sample.com) at the start of the string", TextType.normal_text),
+            TextNode("no url inside", TextType.normal_text),
+            TextNode("url [x](sample.com) mid string", TextType.normal_text),
+            TextNode("multiple [x](sample.com) urls [x](sample.com) in [x](sample.com) one [x](sample.com) node", TextType.normal_text),
+            TextNode("link at end of text [x](sample.com)", TextType.normal_text)
+        ]
+        split_nodes = split_nodes_link(sample)
+        comparison = [
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" at the start of the string", TextType.normal_text),
+            TextNode("no url inside", TextType.normal_text),
+            TextNode("url ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" mid string", TextType.normal_text),
+            TextNode("multiple ", TextType.normal_text),            
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" urls ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" in ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" one ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" node", TextType.normal_text),
+            TextNode("link at end of text ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com')
+        ]
+        self.assertEqual(split_nodes, comparison)
+    def test_image_node_splitter(self):
+        sample = [
+            TextNode("![x](sample.com) at the start of the string", TextType.normal_text),
+            TextNode("no url inside", TextType.normal_text),
+            TextNode("url ![x](sample.com) mid string", TextType.normal_text),
+            TextNode("multiple ![x](sample.com) urls ![x](sample.com) in ![x](sample.com) one ![x](sample.com) node", TextType.normal_text),
+            TextNode("link at end of text ![x](sample.com)", TextType.normal_text)
+        ]
+        split_nodes = split_nodes_image(sample)
+        comparison = [
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" at the start of the string", TextType.normal_text),
+            TextNode("no url inside", TextType.normal_text),
+            TextNode("url ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" mid string", TextType.normal_text),
+            TextNode("multiple ", TextType.normal_text),            
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" urls ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" in ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" one ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode(" node", TextType.normal_text),
+            TextNode("link at end of text ", TextType.normal_text),
+            TextNode('x', TextType.links, 'sample.com')
+        ]
+        self.assertEqual(split_nodes, comparison)
 
 if __name__ == "__main__":
     unittest.main()
