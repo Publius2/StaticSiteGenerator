@@ -46,3 +46,14 @@ def text_node_to_html_node(text_node):
             raise Exception(f'{text_node.text_type} is not a valid text type')
         
     return LeafNode(tag, text_node.text, props=property)
+
+def split_nodes_delimeter(old_nodes, delimeter, text_type):
+    new_nodes = []
+    for node in old_nodes:
+        text_in_node_split = node.text.split(delimeter)
+        for i in range(len(text_in_node_split)):
+            if text_in_node_split[i] == '': continue
+            if i%2 == 0: new_nodes.append(TextNode(text_in_node_split[i], node.text_type))
+            else: new_nodes.append(TextNode(text_in_node_split[i], text_type))
+
+    return new_nodes
