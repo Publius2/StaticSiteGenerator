@@ -97,7 +97,8 @@ class TestImageAndLinkSplitters(unittest.TestCase):
             TextNode("no url inside", TextType.normal_text),
             TextNode("url [x](sample.com) mid string", TextType.normal_text),
             TextNode("multiple [x](sample.com) urls [x](sample.com) in [x](sample.com) one [x](sample.com) node", TextType.normal_text),
-            TextNode("link at end of text [x](sample.com)", TextType.normal_text)
+            TextNode("link at end of text [x](sample.com)", TextType.normal_text),
+            TextNode("[link by itself](sample.com)", TextType.normal_text)
         ]
         split_nodes = split_nodes_link(sample)
         comparison = [
@@ -117,38 +118,67 @@ class TestImageAndLinkSplitters(unittest.TestCase):
             TextNode('x', TextType.links, 'sample.com'),
             TextNode(" node", TextType.normal_text),
             TextNode("link at end of text ", TextType.normal_text),
-            TextNode('x', TextType.links, 'sample.com')
+            TextNode('x', TextType.links, 'sample.com'),
+            TextNode("link by itself", TextType.links, "sample.com")
         ]
-        self.assertEqual(split_nodes, comparison)
+        self.assertListEqual(split_nodes, comparison)
     def test_image_node_splitter(self):
         sample = [
-            TextNode("![x](sample.com) at the start of the string", TextType.normal_text),
+            TextNode("![1](sample.com) at the start of the string", TextType.normal_text),
             TextNode("no url inside", TextType.normal_text),
-            TextNode("url ![x](sample.com) mid string", TextType.normal_text),
-            TextNode("multiple ![x](sample.com) urls ![x](sample.com) in ![x](sample.com) one ![x](sample.com) node", TextType.normal_text),
-            TextNode("link at end of text ![x](sample.com)", TextType.normal_text)
+            TextNode("url ![2](sample.com) mid string", TextType.normal_text),
+            TextNode("multiple ![3](sample.com) urls ![4](sample.com) in ![5](sample.com) one ![6](sample.com) node", TextType.normal_text),
+            TextNode("link at end of text ![7](sample.com)", TextType.normal_text)
         ]
         split_nodes = split_nodes_image(sample)
         comparison = [
-            TextNode('x', TextType.links, 'sample.com'),
+            TextNode('1', TextType.images, 'sample.com'),
             TextNode(" at the start of the string", TextType.normal_text),
             TextNode("no url inside", TextType.normal_text),
             TextNode("url ", TextType.normal_text),
-            TextNode('x', TextType.links, 'sample.com'),
+            TextNode('2', TextType.images, 'sample.com'),
             TextNode(" mid string", TextType.normal_text),
             TextNode("multiple ", TextType.normal_text),            
-            TextNode('x', TextType.links, 'sample.com'),
+            TextNode('3', TextType.images, 'sample.com'),
             TextNode(" urls ", TextType.normal_text),
-            TextNode('x', TextType.links, 'sample.com'),
+            TextNode('4', TextType.images, 'sample.com'),
             TextNode(" in ", TextType.normal_text),
-            TextNode('x', TextType.links, 'sample.com'),
+            TextNode('5', TextType.images, 'sample.com'),
             TextNode(" one ", TextType.normal_text),
-            TextNode('x', TextType.links, 'sample.com'),
+            TextNode('6', TextType.images, 'sample.com'),
             TextNode(" node", TextType.normal_text),
             TextNode("link at end of text ", TextType.normal_text),
-            TextNode('x', TextType.links, 'sample.com')
+            TextNode('7', TextType.images, 'sample.com')
         ]
-        self.assertEqual(split_nodes, comparison)
+        self.assertListEqual(split_nodes, comparison)
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_large_block_multiple_types(self):
+        text_sample = (
+            "This is a sample of markdown text with multiple types " 
+            "**here it is bold** and here is *italic* is **bold** again "
+            "this is `code block` [a link](example.com) and "
+            "![a image](sample.com/png) some more `code` for good measure"
+        )
+        test_nodes = text_to_text_node(text_sample)
+        comparison = [
+            TextNode("This is a sample of markdown text with multiple types ", TextType.normal_text),
+            TextNode("here it is bold", TextType.bold_text),
+            TextNode(" and here is ", TextType.normal_text),
+            TextNode("italic", TextType.italic_text),
+            TextNode(' is ', TextType.normal_text), 
+            TextNode('bold', TextType.bold_text),
+            TextNode(' again this is ', TextType.normal_text),
+            TextNode('code block', TextType.code_text),
+            TextNode(' ', TextType.normal_text),
+            TextNode('a link', TextType.links, 'example.com'),
+            TextNode(' and ', TextType.normal_text),
+            TextNode('a image', TextType.images, 'sample.com/png'),
+            TextNode(' some more ', TextType.normal_text),
+            TextNode('code', TextType.code_text),
+            TextNode(' for good measure', TextType.normal_text)
+        ]
+        self.assertListEqual(test_nodes, comparison)
 
 if __name__ == "__main__":
     unittest.main()

@@ -79,6 +79,7 @@ def split_nodes_image(old_nodes):
     return new_nodes
 
 def split_node_image_and_link_helper(node, links, image=False):
+    text_type = TextType.images if image else TextType.links
     # doesn't make a node if their is no text
     if node.text == '': return []
     # if there are no links just return node
@@ -89,8 +90,17 @@ def split_node_image_and_link_helper(node, links, image=False):
         url = links[0][1]
         node_text_split = node.text.split(f'{"!" if image else ""}[{alt_text}]({url})', 1)
     #if there is text before the link create a text node add it to list followed by link node otherwise just create + add link node 
-        if node_text_split[0] != '': result = [TextNode(node_text_split[0], node.text_type), TextNode(alt_text, TextType.links, url)]
-        else: result = [TextNode(alt_text, TextType.links, url)]
+        if node_text_split[0] != '': result = [TextNode(node_text_split[0], node.text_type), TextNode(alt_text, text_type, url)]
+        else: result = [TextNode(alt_text, text_type, url)]
     #recurese wtih a node made from remaining text and remaining links
         result += split_node_image_and_link_helper(TextNode(node_text_split[1], node.text_type), links[1:], image)
         return result
+
+def text_to_text_node(text):
+    old_nodes = [TextNode(text, TextType.normal_text)]
+    split_by_bold = split_nodes_delimeter(old_nodes, '**', TextType.bold_text)
+    split_by_italic = split_nodes_delimeter(split_by_bold, '*', TextType.italic_text)
+    split_by_code = split_nodes_delimeter(split_by_italic, '`', TextType.code_text)
+    split_by_image = split_nodes_image(split_by_code)
+    split_by_link = split_nodes_link(split_by_image)
+    return split_by_link
