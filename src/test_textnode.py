@@ -180,5 +180,26 @@ class TestTextToTextNodes(unittest.TestCase):
         ]
         self.assertListEqual(test_nodes, comparison)
 
+class TestTextBlocks(unittest.TestCase):
+    def markdown_to_block_test2(self):
+        text = """# This is a heading
+
+                This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+                * This is the first list item in a list block
+                * This is a list item
+                * This is another list item"""
+        test = markdown_to_blocks(text)
+        print(test)
+        comparison = [
+            "# This is a heading",
+            "This is a paragraph of text. It has some **bold** and *italic* words inside of it.",
+            """* This is the first list item in a list block
+                * This is a list item
+                * This is another list item"""
+        ]
+        self.assertListEqual(test, comparison)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -104,3 +104,14 @@ def text_to_text_node(text):
     split_by_image = split_nodes_image(split_by_code)
     split_by_link = split_nodes_link(split_by_image)
     return split_by_link
+
+def markdown_to_blocks(text):
+    lines = text.split('\n')
+    blocks = []
+    block = ''
+    for line in lines:
+        if line == '' and block != '':
+            blocks.append(block)
+            blocks = ''
+        blocks += line.strip() + '\n'
+    return blocks
