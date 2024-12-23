@@ -1,4 +1,5 @@
-
+from block_node import markdown_to_blocks, block_to_block_type, block_type
+from textnode import text_to_text_node, text_node_to_html_node
 
 class HTMLNode:
     def __init__(self, tag=None, value=None, children=None, props=None):
@@ -41,3 +42,21 @@ class ParentNode(HTMLNode):
             result += child.to_html()
         result += f'</{self.tag}>'
         return result 
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    blocks_html_nodes = []
+    for block in blocks:
+        type = block_to_block_type(block)
+        match type:
+            case block_type.paragraph: tag = 'p'
+            case block_type.heading: tag = 'h1'
+            case block_type.code: tag = 'code'
+            case block_type.quote: tag = 'blockquote'
+            case block_type.unordered_list: tag = 'ul'
+            case block_type.ordered_list: tag = 'ol'
+            case _: raise ValueError('invalid block type')
+        block_text_nodes = text_to_text_node(block)
+        block_html_nodes = list(map(text_node_to_html_node, block_text_nodes))
+        block_html_nodes.append(ParentNode(tag, block_html_nodes))
+    return ParentNode('div', block_html_nodes)
